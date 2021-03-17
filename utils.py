@@ -81,19 +81,19 @@ def evaluate(model, iterator, criterion):
             loss2 = criterion(predictions[0], batch.agency)
             loss = loss1 + loss2
             # agency
-            acc_a = accuracy_score(batch.agency.cpu(), torch.round(torch.sigmoid(predictions[0])).cpu())
-            prec_a = precision_score(batch.agency.cpu(), torch.round(torch.sigmoid(predictions[0])).cpu())
-            recall_a = recall_score(batch.agency.cpu(), torch.round(torch.sigmoid(predictions[0])).cpu())
-            f1_a = f1_score(batch.agency.cpu(), torch.round(torch.sigmoid(predictions[0])).cpu())
+            acc_a = accuracy_score(batch.agency.cpu(), torch.round(predictions[0]).cpu())
+            prec_a = precision_score(batch.agency.cpu(), torch.round(predictions[0]).cpu())
+            recall_a = recall_score(batch.agency.cpu(), torch.round(predictions[0]).cpu())
+            f1_a = f1_score(batch.agency.cpu(), torch.round(predictions[0]).cpu())
             sum_prec_a+=prec_a
             sum_f1_a+=f1_a
             sum_recall_a+=recall_a
             sum_acc_a+=acc_a
             # social
-            acc_s = accuracy_score(batch.social.cpu(), torch.round(torch.sigmoid(predictions[1])).cpu())
-            prec_s = precision_score(batch.social.cpu(), torch.round(torch.sigmoid(predictions[1])).cpu())
-            recall_s = recall_score(batch.social.cpu(), torch.round(torch.sigmoid(predictions[1])).cpu())
-            f1_s = f1_score(batch.social.cpu(), torch.round(torch.sigmoid(predictions[1])).cpu())
+            acc_s = accuracy_score(batch.social.cpu(), torch.round(predictions[1]).cpu())
+            prec_s = precision_score(batch.social.cpu(), torch.round(predictions[1]).cpu())
+            recall_s = recall_score(batch.social.cpu(), torch.round(predictions[1]).cpu())
+            f1_s = f1_score(batch.social.cpu(), torch.round(predictions[1]).cpu())
             sum_prec_s+=prec_s
             sum_f1_s+=f1_s
             sum_recall_s+=recall_s
