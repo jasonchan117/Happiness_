@@ -71,9 +71,11 @@ def evaluate(model, iterator, criterion):
         sum_f1_s=0.
         sum_acc_s =0.
         for batch in iterator:
-
-            predictions = model(batch.text).squeeze(1)
-
+            predictions=[]
+            prediction = model(batch.text)
+            predictions.append(prediction[0].squeeze(1))
+            predictions.append(prediction[1].squeeze(1))
+            
             loss1 = criterion(predictions[0], batch.agency)
             loss2 = criterion(predictions[0], batch.agency)
             loss = loss1 + loss2
