@@ -6,6 +6,7 @@ import time
 import torch.optim as optim
 import argparse
 import random
+from model import *
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
@@ -85,3 +86,12 @@ DROPOUT = args.dropout
 # The index of token 'pad'
 PAD_IDX = TEXT.vocab.stoi[TEXT.pad_token]
 # Initialize the model
+model = HPC(INPUT_DIM, EMBEDDING_DIM, HIDDEN_DIM, OUTPUT_DIM, N_LAYERS, BIDIRECTIONAL, DROPOUT, PAD_IDX)
+pretrained_embeddings = TEXT.vocab.vectors
+model.agency.embedding.weight.data.copy_(pretrained_embeddings)
+model.social.embedding.weight.data.copy_(pretrained_embeddings)
+
+optimizer = optim.Adam(model.parameters(),lr=args.lr, weight_decay=args.weight_decay)
+model = model.to(device)
+criterion = nn.BCEWithLogitsLoss()
+criterion = criterion.to(device)
