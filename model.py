@@ -10,7 +10,7 @@ class RNN(nn.Module):
         self.rnn = nn.LSTM(embedding_dim, hidden_dim, num_layers=n_layers,
                            bidirectional=bidirectional, dropout=dropout)
         self.fc = nn.Linear(hidden_dim * 2 if bidirectional==True else 1, output_dim)
-        self.sig = nn.Sigmoid()
+        # self.sig = nn.Sigmoid()
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, text):
@@ -19,4 +19,4 @@ class RNN(nn.Module):
         output, (hidden, cell) = self.rnn(embedded)
 
         hidden = self.dropout(torch.cat((hidden[-2, :, :], hidden[-1, :, :]), dim=1))
-        return self.sig(self.fc(hidden))
+        return self.fc(hidden)

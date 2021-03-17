@@ -102,24 +102,46 @@ criterion = criterion.to(device)
 best_valid_loss = float('inf')
 for epoch in range(args.epochs):
     start_time = time.time()
-    train_loss_a, train_acc_a = training(model_a, train_iterator, optimizer_a,  criterion)
-    train_loss_s, train_acc_s = training(model_s, train_iterator, optimizer_s,  criterion, label_name= 'social')
+    train_loss, train_acc = training(model_s, train_iterator, optimizer_s, criterion, label_name = 'social')
+    valid_loss, valid_acc = evaluate(model_s, valid_iterator, criterion, label_name='social')
 
-    train_loss = train_loss_a + train_loss_s
+    train_loss_a, train_acc_a = training(model_a, train_iterator, optimizer_a, criterion)
+    valid_loss_a, valid_acc_a = evaluate(model_a, valid_iterator, criterion)
+
+
+    # train_loss_a, train_acc_a = training(model_a, train_iterator, optimizer_a,  criterion)
+    # train_loss_s, train_acc_s = training(model_s, train_iterator, optimizer_s,  criterion, label_name= 'social')
+
+    # train_loss = train_loss_a + train_loss_s
 
     # Derives the metric values including accuracy, precision, recall and f1.
-    valid_loss, valid_acc_a, valid_prec_a, valid_recall_a, valid_f1_a, valid_acc_s, valid_prec_s, valid_recall_s, valid_f1_s = evaluate(model_a, model_s, valid_iterator, criterion)
+    # valid_loss, valid_acc_a, valid_prec_a, valid_recall_a, valid_f1_a, valid_acc_s, valid_prec_s, valid_recall_s, valid_f1_s = evaluate(model_a, model_s, valid_iterator, criterion)
     end_time = time.time()
     epoch_mins, epoch_secs = epoch_time(start_time, end_time)
 
+
+
+    print(f'Epoch: {epoch+1:02} | Epoch Time: {epoch_mins}m {epoch_secs}s')
     # Save the model.
     # if valid_loss < best_valid_loss:
     #     best_valid_loss = valid_loss
     #     torch.save(model.state_dict(), 'wordavg-model.pt')
 
     ###Printing results
-    print(f'Epoch: {epoch + 1:02} | Epoch Time: {epoch_mins}m {epoch_secs}s')
-    print(f'\tTrain Loss: {train_loss:.6f} | Train Acc of Agency: {train_acc_a * 100:.5f} | Train Acc of Social: {train_acc_s * 100:.5f}%')
-    print(f'\t Val. Loss: {valid_loss:.6f} | Val. Acc of Agency: {valid_acc_a * 100:.5f}% | Val. Acc of Social: {valid_acc_s * 100:.5f}%')
-    #print(f'\t Val. Loss: {valid_loss:.3f} | Val. Acc of Agency: {valid_acc_a * 100:.2f}% | Val. Prec of Agency: {valid_prec_a * 100:.2f}% | Val. Recall of Agency: {valid_recall_a * 100:.2f}% | Val. F1 of Agency: {valid_f1_a * 100:.2f} | Val. Acc of Social: {valid_acc_s * 100:.2f}% | Val. Prec of Social: {valid_prec_s * 100:.2f}% | Val. Recall of Social: {valid_recall_s * 100:.2f}% | Val. F1 of Social: {valid_f1_s * 100:.2f}%')
+
+    print('Agency:')
+
+    print(f'\tTrain Loss: {train_loss_a:.6f} | Train Acc: {train_acc_a*100:.5f}%')
+    print(f'\t Val. Loss: {valid_loss_a:.6f} |  Val. Acc: {valid_acc_a*100:.5f}%')
+
+
+    print('Social:')
+
+    print(f'\tTrain Loss: {train_loss:.6f} | Train Acc: {train_acc*100:.5f}%')
+    print(f'\t Val. Loss: {valid_loss:.6f} |  Val. Acc: {valid_acc*100:.5f}%')
+
+    # print(f'Epoch: {epoch + 1:02} | Epoch Time: {epoch_mins}m {epoch_secs}s')
+    # print(f'\tTrain Loss: {train_loss:.6f} | Train Acc of Agency: {train_acc_a * 100:.5f} | Train Acc of Social: {train_acc_s * 100:.5f}%')
+    # print(f'\t Val. Loss: {valid_loss:.6f} | Val. Acc of Agency: {valid_acc_a * 100:.5f}% | Val. Acc of Social: {valid_acc_s * 100:.5f}%')
+    # #print(f'\t Val. Loss: {valid_loss:.3f} | Val. Acc of Agency: {valid_acc_a * 100:.2f}% | Val. Prec of Agency: {valid_prec_a * 100:.2f}% | Val. Recall of Agency: {valid_recall_a * 100:.2f}% | Val. F1 of Agency: {valid_f1_a * 100:.2f} | Val. Acc of Social: {valid_acc_s * 100:.2f}% | Val. Prec of Social: {valid_prec_s * 100:.2f}% | Val. Recall of Social: {valid_recall_s * 100:.2f}% | Val. F1 of Social: {valid_f1_s * 100:.2f}%')
 
