@@ -95,3 +95,20 @@ optimizer = optim.Adam(model.parameters(),lr=args.lr, weight_decay=args.weight_d
 model = model.to(device)
 criterion = nn.BCEWithLogitsLoss()
 criterion = criterion.to(device)
+
+for epoch in range(args.epochs):
+    start_time = time.time()
+    train_loss, train_acc = training(model, train_iterator, optimizer, criterion)
+    # Derives the metric values including accuracy, precision, recall and f1.
+    valid_loss, valid_acc, valid_prec, valid_recall, valid_f1 = evaluate(model, valid_iterator, criterion)
+    end_time = time.time()
+    epoch_mins, epoch_secs = epoch_time(start_time, end_time)
+
+    # Save the model.
+    if valid_loss < best_valid_loss:
+        best_valid_loss = valid_loss
+        torch.save(model.state_dict(), 'wordavg-model.pt')
+
+    print(f'Epoch: {epoch + 1:02} | Epoch Time: {epoch_mins}m {epoch_secs}s')
+    print(f'\tTrain Loss: {train_loss:.3f} | Train Acc: {train_acc * 100:.2f}%')
+    print(f'\t Val. Loss: {valid_loss:.3f} | Val. Acc: {valid_acc * 100:.2f}% | Val. Prec: {valid_prec * 100:.2f}% | Val. Recall: {valid_recall * 100:.2f}% | Val. F1: {valid_f1 * 100:.2f}%')

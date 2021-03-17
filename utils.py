@@ -32,65 +32,74 @@ def get_dataset(data_x, label, text_field, label_field, data,test=False):
 
 
 def training(model, iterator, optimizer,criterion):
-    epoch_loss = 0
-    epoch_acc = 0
+    epoch_loss = 0.
+    epoch_acc_a = 0.
     total_len = 0
-
+    epoch_acc_s = 0.
     model.train()
-
     for batch in iterator:
-
         optimizer.zero_grad()
         predictions = model(batch.text).squeeze(1)
-        loss = criterion(batch.label,predictions)
-        acc = binary_accuracy(predictions, batch.label)
+        loss_a = criterion(batch.agency, predictions[0])
+        loss_s = criterion(batch.social, predictions[1])
+        loss = loss_a + loss_s
+        acc_a = accuracy_score(batch.agency.cpu(), torch.round(torch.sigmoid(predictions[0])).cpu())
+        acc_s = accuracy_score(batch.social.cpu(), torch.round(torch.sigmoid(predictions[1])).cpu())
         loss.backward()
         optimizer.step()
-        epoch_loss += loss.item() * len(batch.label)
-        epoch_acc += acc.item() * len(batch.label)
-        total_len += len(batch.label)
+        epoch_loss += loss.item()
+        epoch_acc_a += acc_a
+        epoch_acc_s += acc_s
+        total_len += 1
 
-    return epoch_loss / total_len, epoch_acc / total_len
+    return epoch_loss/total_len, epoch_acc_a/total_len, epoch_acc_s/total_len
 
 def evaluate(model, iterator, criterion):
-    epoch_loss = 0
-    total_len = 0
-
+    epoch_loss = 0.
     model.eval()
-
     with torch.no_grad():
-
         ind=0
-        sum_prec=0.
-        sum_recall=0.
-        sum_f1=0.
-        sum_acc=0.
+        sum_prec_a=0.
+        sum_recall_a=0.
+        sum_f1_a=0.
+        sum_acc_a =0.
+        sum_prec_s=0.
+        sum_recall_s=0.
+        sum_f1_s=0.
+        sum_acc_s =0.
         for batch in iterator:
 
             predictions = model(batch.text).squeeze(1)
-            loss = criterion(predictions, batch.label)
-            acc = accuracy_score(batch.label.cpu(), torch.round(torch.sigmoid(predictions)).cpu())
-            prec = precision_score(batch.label.cpu(), torch.round(torch.sigmoid(predictions)).cpu())
-            recall = recall_score(batch.label.cpu(), torch.round(torch.sigmoid(predictions)).cpu())
-            f1= f1_score(batch.label.cpu(), torch.round(torch.sigmoid(predictions)).cpu())
-            sum_prec+=prec
-            sum_f1+=f1
-            sum_recall+=recall
-            sum_acc+=acc
 
-            epoch_loss += loss.item() * len(batch.label)
-            total_len += len(batch.label)
+            loss1 = criterion(predictions[0], batch.agency)
+            loss2 = criterion(predictions[0], batch.agency)
+            loss = loss1 + loss2
+            # agency
+            acc_a = accuracy_score(batch.agency.cpu(), torch.round(torch.sigmoid(predictions[0])).cpu())
+            prec_a = precision_score(batch.agency.cpu(), torch.round(torch.sigmoid(predictions[0])).cpu())
+            recall_a = recall_score(batch.agency.cpu(), torch.round(torch.sigmoid(predictions[0])).cpu())
+            f1_a = f1_score(batch.agency.cpu(), torch.round(torch.sigmoid(predictions[0])).cpu())
+            sum_prec_a+=prec_a
+            sum_f1_a+=f1_a
+            sum_recall_a+=recall_a
+            sum_acc_a+=acc_a
+            # social
+            acc_s = accuracy_score(batch.social.cpu(), torch.round(torch.sigmoid(predictions[1])).cpu())
+            prec_s = precision_score(batch.social.cpu(), torch.round(torch.sigmoid(predictions[1])).cpu())
+            recall_s = recall_score(batch.social.cpu(), torch.round(torch.sigmoid(predictions[1])).cpu())
+            f1_s = f1_score(batch.social.cpu(), torch.round(torch.sigmoid(predictions[1])).cpu())
+            sum_prec_s+=prec_s
+            sum_f1_s+=f1_s
+            sum_recall_s+=recall_s
+            sum_acc_s+=acc_s
 
+            epoch_loss += loss.item()
             ind+=1
     model.train()
 
-    return epoch_loss / total_len, sum_acc/ind , sum_prec / ind, sum_recall / ind , sum_f1 / ind
-
-def binary_accuracy(preds, y):
-
-    rounded_preds = torch.round(torch.sigmoid(preds))
-
-    correct = (rounded_preds == y).float()
-    acc = correct.sum() / len(correct)
-
-    return acc
+    return epoch_loss / ind, sum_acc_a/ind , sum_prec_a / ind, sum_recall_a / ind , sum_f1_a / ind , sum_acc_s/ind , sum_prec_s / ind, sum_recall_s / ind , sum_f1_s / ind
+def epoch_time(start_time, end_time):
+    elapsed_time = end_time - start_time
+    elapsed_mins = int(elapsed_time / 60)
+    elapsed_secs = int(elapsed_time - (elapsed_mins * 60))
+    return elapsed_mins, elapsed_secs
