@@ -20,9 +20,9 @@ parser.add_argument('--epochs', default=10, type=int,
                     help='epochs to train')
 parser.add_argument('--dropout', default=0.5,
                     help='Dropout rate of RNN.')
-parser.add_argument('--lr', default=1e-2, type=float,
+parser.add_argument('--lr', default=1e-4, type=float,
                     help='learning rate')
-parser.add_argument('--batch', default=32)
+parser.add_argument('--batch', default=64)
 parser.add_argument('--weight_decay', default=0, type=float,
                     help='factor for L2 regularization')
 parser.add_argument('--seed', default=1234, type=int,
@@ -103,8 +103,8 @@ best_valid_loss = float('inf')
 for epoch in range(args.epochs):
     start_time = time.time()
     train_loss_a, train_acc_a = training(model_a, train_iterator, optimizer_a,  criterion)
-    train_loss_s, train_acc_s = training(model_s, train_iterator, optimizer_s,  criterion)
-    print(train_loss_a,train_loss_s)
+    train_loss_s, train_acc_s = training(model_s, train_iterator, optimizer_s,  criterion, label_name= 'social')
+
     train_loss = train_loss_a + train_loss_s
 
     # Derives the metric values including accuracy, precision, recall and f1.

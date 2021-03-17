@@ -31,7 +31,7 @@ def get_dataset(data_x, label, text_field, label_field, data,test=False):
     return examples, fields
 
 
-def training(model, iterator, optimizer, criterion):
+def training(model, iterator, optimizer, criterion, label_name= 'agency'):
     epoch_loss = 0.
     epoch_acc = 0.
     total_len = 0.
@@ -39,10 +39,20 @@ def training(model, iterator, optimizer, criterion):
     for batch in iterator:
         optimizer.zero_grad()
         predictions = model(batch.text).squeeze(1)
-        loss = criterion(batch.agency, predictions)
+        if label_name == 'agency':
+          loss = criterion(batch.agency, predictions)
+          print(predictions,batch.agency)
+        else :
+          loss = criterion(batch.social, predictions)
         loss.backward()
         optimizer.step()
-        acc= binary_accuracy(predictions, batch.agency).item()
+
+        
+
+        if label_name == 'agency':
+          acc= binary_accuracy(predictions, batch.agency).item()
+        else:
+          acc= binary_accuracy(predictions, batch.social).item()
         epoch_loss += loss.item()
         epoch_acc += acc
         total_len += 1
