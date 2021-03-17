@@ -95,12 +95,12 @@ optimizer = optim.Adam(model.parameters(),lr=args.lr, weight_decay=args.weight_d
 model = model.to(device)
 criterion = nn.BCEWithLogitsLoss()
 criterion = criterion.to(device)
-
+best_valid_loss = float('inf')
 for epoch in range(args.epochs):
     start_time = time.time()
-    train_loss, train_acc = training(model, train_iterator, optimizer, criterion)
+    train_loss, train_acc_a, train_acc_s = training(model, train_iterator, optimizer, criterion)
     # Derives the metric values including accuracy, precision, recall and f1.
-    valid_loss, valid_acc, valid_prec, valid_recall, valid_f1 = evaluate(model, valid_iterator, criterion)
+    valid_loss, valid_acc_a, valid_prec_a, valid_recall_a, valid_f1_a, valid_acc_s, valid_prec_s, valid_recall_s, valid_f1_s = evaluate(model, valid_iterator, criterion)
     end_time = time.time()
     epoch_mins, epoch_secs = epoch_time(start_time, end_time)
 
@@ -110,5 +110,5 @@ for epoch in range(args.epochs):
         torch.save(model.state_dict(), 'wordavg-model.pt')
 
     print(f'Epoch: {epoch + 1:02} | Epoch Time: {epoch_mins}m {epoch_secs}s')
-    print(f'\tTrain Loss: {train_loss:.3f} | Train Acc: {train_acc * 100:.2f}%')
-    print(f'\t Val. Loss: {valid_loss:.3f} | Val. Acc: {valid_acc * 100:.2f}% | Val. Prec: {valid_prec * 100:.2f}% | Val. Recall: {valid_recall * 100:.2f}% | Val. F1: {valid_f1 * 100:.2f}%')
+    print(f'\tTrain Loss: {train_loss:.3f} | Train Acc of Agency: {train_acc_a * 100:.2f} | Train Acc of Social: {train_acc_s * 100:.2f}%')
+    print(f'\t Val. Loss: {valid_loss:.3f} | Val. Acc of Agency: {valid_acc_a * 100:.2f}% | Val. Prec of Agency: {valid_prec_a * 100:.2f}% | Val. Recall of Agency: {valid_recall_a * 100:.2f}% | Val. F1 of Agency: {valid_f1_a * 100:.2f} | Val. Acc of Social: {valid_acc_s * 100:.2f}% | Val. Prec of Social: {valid_prec_s * 100:.2f}% | Val. Recall of Social: {valid_recall_s * 100:.2f}% | Val. F1 of Social: {valid_f1_s * 100:.2f}%')
