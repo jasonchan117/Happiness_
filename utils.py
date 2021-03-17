@@ -34,7 +34,7 @@ def get_dataset(data_x, label, text_field, label_field, data,test=False):
 def training(model, iterator, optimizer,criterion):
     epoch_loss = 0.
     epoch_acc_a = 0.
-    total_len = 0
+    total_len = 0.
     epoch_acc_s = 0.
     model.train()
     for batch in iterator:
@@ -46,12 +46,12 @@ def training(model, iterator, optimizer,criterion):
         loss_a = criterion(batch.agency, predictions[0])
         loss_s = criterion(batch.social, predictions[1])
         loss = loss_a + loss_s
+        #print(loss_a.item(), loss_s.item())
         acc_a = binary_accuracy(predictions[0], batch.agency).item()
         acc_s = binary_accuracy(predictions[1], batch.social).item()
         loss.backward()
         optimizer.step()
         epoch_loss += loss.item()
-        print(loss.item())
         epoch_acc_a += acc_a
         epoch_acc_s += acc_s
         total_len += 1

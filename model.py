@@ -11,6 +11,7 @@ class RNN(nn.Module):
                            bidirectional=bidirectional, dropout=dropout)
 
         self.fc = nn.Linear(hidden_dim * 2 if bidirectional==True else 1, output_dim)
+        self.sig = nn.Sigmoid()
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, text):
@@ -20,7 +21,7 @@ class RNN(nn.Module):
 
         hidden = self.dropout(torch.cat((hidden[-2, :, :], hidden[-1, :, :]), dim=1))
 
-        return self.fc(hidden)
+        return self.sig(self.fc(hidden))
 
 class HPC(nn.Module):
 
