@@ -3,7 +3,7 @@ from tqdm import tqdm
 import torch
 from sklearn.metrics import precision_score, recall_score, f1_score,accuracy_score
 def get_raw_data(path):
-    data = pd.read_csv(path)
+    data = pd.read_csv(path, encoding="unicode_escape")
     x = list(data.moment)
     y_agency = list(data.agency == 'yes')
     y_social = list(data.social == 'yes')
@@ -39,12 +39,15 @@ def training(model, iterator, optimizer,criterion):
     model.train()
     for batch in iterator:
         optimizer.zero_grad()
-        predictions = model(batch.text).squeeze(1)
+        predictions=[]
+        prediction = model(batch.text)
+        predictions.append(prediction[0].squeeze(1))
+        predictions.append(prediction[1].squeeze(1))
         loss_a = criterion(batch.agency, predictions[0])
         loss_s = criterion(batch.social, predictions[1])
         loss = loss_a + loss_s
-        acc_a = accuracy_score(batch.agency.cpu(), torch.round(torch.sigmoid(predictions[0])).cpu())
-        acc_s = accuracy_score(batch.social.cpu(), torch.round(torch.sigmoid(predictions[1])).cpu())
+        acc_a = binary_accuracy(predictions[0], batch.agency).item()
+        acc_s = binary_accuracy(predictions[1], batch.social).item()
         loss.backward()
         optimizer.step()
         epoch_loss += loss.item()
@@ -103,3 +106,12 @@ def epoch_time(start_time, end_time):
     elapsed_mins = int(elapsed_time / 60)
     elapsed_secs = int(elapsed_time - (elapsed_mins * 60))
     return elapsed_mins, elapsed_secs
+
+def binary_accuracy(preds, y):
+
+    rounded_preds = torch.round(torch.sigmoid(preds))
+
+    correct = (rounded_preds == y).float()
+    acc = correct.sum() / len(correct)
+
+    return acc

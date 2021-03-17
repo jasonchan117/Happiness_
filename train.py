@@ -25,7 +25,7 @@ parser.add_argument('--lr', default=1e-4, type=float,
 parser.add_argument('--batch', default=64)
 parser.add_argument('--weight_decay', default=0, type=float,
                     help='factor for L2 regularization')
-parser.add_argument('--seed', default=594277, type=int,
+parser.add_argument('--seed', default=1234, type=int,
                     help='manual seed')
 parser.add_argument('--cuda', action='store_true',
                     help='Use cuda or not')
@@ -42,8 +42,6 @@ args = parser.parse_args()
 
 raw_x, raw_y = get_raw_data(args.traindata)
 test_x, test_y = get_raw_data(args.testdata)
-
-
 
 tokenize = lambda x: x.split()
 TEXT = data.Field(sequential=True, tokenize=tokenize, lower=True, fix_length=200)
@@ -109,7 +107,7 @@ for epoch in range(args.epochs):
         best_valid_loss = valid_loss
         torch.save(model.state_dict(), 'wordavg-model.pt')
 
-    ###Printing results.
+    ###Printing results
     print(f'Epoch: {epoch + 1:02} | Epoch Time: {epoch_mins}m {epoch_secs}s')
     print(f'\tTrain Loss: {train_loss:.3f} | Train Acc of Agency: {train_acc_a * 100:.2f} | Train Acc of Social: {train_acc_s * 100:.2f}%')
     print(f'\t Val. Loss: {valid_loss:.3f} | Val. Acc of Agency: {valid_acc_a * 100:.2f}% | Val. Prec of Agency: {valid_prec_a * 100:.2f}% | Val. Recall of Agency: {valid_recall_a * 100:.2f}% | Val. F1 of Agency: {valid_f1_a * 100:.2f} | Val. Acc of Social: {valid_acc_s * 100:.2f}% | Val. Prec of Social: {valid_prec_s * 100:.2f}% | Val. Recall of Social: {valid_recall_s * 100:.2f}% | Val. F1 of Social: {valid_f1_s * 100:.2f}%')

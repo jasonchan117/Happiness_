@@ -32,9 +32,9 @@ class HPC(nn.Module):
         self.social = RNN(vocab_size, embedding_dim, hidden_dim, output_dim,
                  n_layers, bidirectional, dropout, pad_idx)
     def forward(self, text):
-        embedded = self.dropout(self.embedding(text))
 
-        output_a = self.agency(embedded)
-        output_s = self.social(embedded)
+
+        output_a = self.agency(text)
+        output_s = self.social(text)
 
         return output_a, output_s
