@@ -51,6 +51,7 @@ def training(model, iterator, optimizer,criterion):
         loss.backward()
         optimizer.step()
         epoch_loss += loss.item()
+        print(loss.item())
         epoch_acc_a += acc_a
         epoch_acc_s += acc_s
         total_len += 1
@@ -75,7 +76,7 @@ def evaluate(model, iterator, criterion):
             prediction = model(batch.text)
             predictions.append(prediction[0].squeeze(1))
             predictions.append(prediction[1].squeeze(1))
-            
+
             loss1 = criterion(predictions[0], batch.agency)
             loss2 = criterion(predictions[0], batch.agency)
             loss = loss1 + loss2
