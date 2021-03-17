@@ -20,9 +20,9 @@ parser.add_argument('--epochs', default=10, type=int,
                     help='epochs to train')
 parser.add_argument('--dropout', default=0.5,
                     help='Dropout rate of RNN.')
-parser.add_argument('--lr', default=1e-4, type=float,
+parser.add_argument('--lr', default=1e-2, type=float,
                     help='learning rate')
-parser.add_argument('--batch', default=64)
+parser.add_argument('--batch', default=32)
 parser.add_argument('--weight_decay', default=0, type=float,
                     help='factor for L2 regularization')
 parser.add_argument('--seed', default=1234, type=int,
@@ -84,32 +84,42 @@ DROPOUT = args.dropout
 # The index of token 'pad'
 PAD_IDX = TEXT.vocab.stoi[TEXT.pad_token]
 # Initialize the model
-model = HPC(INPUT_DIM, EMBEDDING_DIM, HIDDEN_DIM, OUTPUT_DIM, N_LAYERS, BIDIRECTIONAL, DROPOUT, PAD_IDX)
-pretrained_embeddings = TEXT.vocab.vectors
-model.agency.embedding.weight.data.copy_(pretrained_embeddings)
-model.social.embedding.weight.data.copy_(pretrained_embeddings)
+model_a = RNN(INPUT_DIM, EMBEDDING_DIM, HIDDEN_DIM, OUTPUT_DIM, N_LAYERS, BIDIRECTIONAL, DROPOUT, PAD_IDX)
+model_s = RNN(INPUT_DIM, EMBEDDING_DIM, HIDDEN_DIM, OUTPUT_DIM, N_LAYERS, BIDIRECTIONAL, DROPOUT, PAD_IDX)
 
-optimizer = optim.Adam(model.parameters(),lr=args.lr, weight_decay=args.weight_decay)
-model = model.to(device)
+pretrained_embeddings = TEXT.vocab.vectors
+model_a.embedding.weight.data.copy_(pretrained_embeddings)
+model_s.embedding.weight.data.copy_(pretrained_embeddings)
+
+optimizer_a = optim.Adam(model_a.parameters(),lr=args.lr, weight_decay=args.weight_decay)
+optimizer_s = optim.Adam(model_s.parameters(),lr=args.lr, weight_decay=args.weight_decay)
+
+#optimizer_ = optim.Adam(model.parameters(),lr=args.lr, weight_decay=args.weight_decay)
+model_a = model_a.to(device)
+model_s = model_s.to(device)
 criterion = nn.BCEWithLogitsLoss()
 criterion = criterion.to(device)
 best_valid_loss = float('inf')
 for epoch in range(args.epochs):
     start_time = time.time()
-    train_loss, train_acc_a, train_acc_s = training(model, train_iterator, optimizer, criterion)
+    train_loss_a, train_acc_a = training(model_a, train_iterator, optimizer_a,  criterion)
+    train_loss_s, train_acc_s = training(model_s, train_iterator, optimizer_s,  criterion)
+    print(train_loss_a,train_loss_s)
+    train_loss = train_loss_a + train_loss_s
+
     # Derives the metric values including accuracy, precision, recall and f1.
-    valid_loss, valid_acc_a, valid_prec_a, valid_recall_a, valid_f1_a, valid_acc_s, valid_prec_s, valid_recall_s, valid_f1_s = evaluate(model, valid_iterator, criterion)
+    valid_loss, valid_acc_a, valid_prec_a, valid_recall_a, valid_f1_a, valid_acc_s, valid_prec_s, valid_recall_s, valid_f1_s = evaluate(model_a, model_s, valid_iterator, criterion)
     end_time = time.time()
     epoch_mins, epoch_secs = epoch_time(start_time, end_time)
 
     # Save the model.
-    if valid_loss < best_valid_loss:
-        best_valid_loss = valid_loss
-        torch.save(model.state_dict(), 'wordavg-model.pt')
+    # if valid_loss < best_valid_loss:
+    #     best_valid_loss = valid_loss
+    #     torch.save(model.state_dict(), 'wordavg-model.pt')
 
     ###Printing results
     print(f'Epoch: {epoch + 1:02} | Epoch Time: {epoch_mins}m {epoch_secs}s')
-    print(f'\tTrain Loss: {train_loss:.3f} | Train Acc of Agency: {train_acc_a * 100:.2f} | Train Acc of Social: {train_acc_s * 100:.2f}%')
-    print(f'\t Val. Loss: {valid_loss:.3f} | Val. Acc of Agency: {valid_acc_a * 100:.2f}% | Val. Acc of Social: {valid_acc_s * 100:.2f}%')
+    print(f'\tTrain Loss: {train_loss:.6f} | Train Acc of Agency: {train_acc_a * 100:.5f} | Train Acc of Social: {train_acc_s * 100:.5f}%')
+    print(f'\t Val. Loss: {valid_loss:.6f} | Val. Acc of Agency: {valid_acc_a * 100:.5f}% | Val. Acc of Social: {valid_acc_s * 100:.5f}%')
     #print(f'\t Val. Loss: {valid_loss:.3f} | Val. Acc of Agency: {valid_acc_a * 100:.2f}% | Val. Prec of Agency: {valid_prec_a * 100:.2f}% | Val. Recall of Agency: {valid_recall_a * 100:.2f}% | Val. F1 of Agency: {valid_f1_a * 100:.2f} | Val. Acc of Social: {valid_acc_s * 100:.2f}% | Val. Prec of Social: {valid_prec_s * 100:.2f}% | Val. Recall of Social: {valid_recall_s * 100:.2f}% | Val. F1 of Social: {valid_f1_s * 100:.2f}%')
 

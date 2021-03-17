@@ -9,7 +9,6 @@ class RNN(nn.Module):
 
         self.rnn = nn.LSTM(embedding_dim, hidden_dim, num_layers=n_layers,
                            bidirectional=bidirectional, dropout=dropout)
-
         self.fc = nn.Linear(hidden_dim * 2 if bidirectional==True else 1, output_dim)
         self.sig = nn.Sigmoid()
         self.dropout = nn.Dropout(dropout)
@@ -20,22 +19,4 @@ class RNN(nn.Module):
         output, (hidden, cell) = self.rnn(embedded)
 
         hidden = self.dropout(torch.cat((hidden[-2, :, :], hidden[-1, :, :]), dim=1))
-
         return self.sig(self.fc(hidden))
-
-class HPC(nn.Module):
-
-    def __init__(self, vocab_size, embedding_dim, hidden_dim, output_dim,
-                 n_layers, bidirectional, dropout, pad_idx):
-        super().__init__()
-        self.agency= RNN(vocab_size, embedding_dim, hidden_dim, output_dim,
-                 n_layers, bidirectional, dropout, pad_idx)
-        self.social = RNN(vocab_size, embedding_dim, hidden_dim, output_dim,
-                 n_layers, bidirectional, dropout, pad_idx)
-    def forward(self, text):
-
-
-        output_a = self.agency(text)
-        output_s = self.social(text)
-
-        return output_a, output_s
