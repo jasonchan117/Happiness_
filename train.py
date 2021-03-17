@@ -54,7 +54,7 @@ test_examples, test_fields = get_dataset(test_x,test_y, TEXT, LABEL, data=data, 
 train = data.Dataset(train_examples, train_fields)
 test = data.Dataset(test_examples, test_fields)
 
-train, valid = train.split(random_state=random.seed(args.seed))
+train, valid = train.split(random_state=random.seed(args.seed), split_ratio=0.8)
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 torch.manual_seed(args.seed)
