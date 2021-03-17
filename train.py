@@ -65,7 +65,7 @@ if args.cuda == True:
 TEXT.build_vocab(train, max_size=25000, vectors="glove.6B.100d", unk_init=torch.Tensor.normal_)
 LABEL.build_vocab(train)
 
-train_iterator,valid_iterator, valid_iterator = data.BucketIterator.splits(
+train_iterator,valid_iterator, test_iterator = data.BucketIterator.splits(
     (train, valid, test),
     batch_size = args.batch,
     sort_key= lambda x : len(x.text),
