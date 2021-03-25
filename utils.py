@@ -1,7 +1,9 @@
 import pandas as pd
 from tqdm import tqdm
 import torch
-from sklearn.metrics import precision_score, recall_score, f1_score,accuracy_score
+from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
+
+
 def get_raw_data(path):
     data = pd.read_csv(path, encoding="unicode_escape")
     x = list(data.moment)
@@ -17,9 +19,8 @@ def get_raw_data(path):
 
 
 # Construct example and field objects.
-def get_dataset(data_x, label, text_field, label_field, data,test=False):
-
-    fields = [("id", None),("text", text_field), ("agency", label_field), ('social', label_field)]
+def get_dataset(data_x, label, text_field, label_field, data, test=False):
+    fields = [("id", None), ("text", text_field), ("agency", label_field), ('social', label_field)]
     examples = []
 
     if test:
@@ -31,31 +32,31 @@ def get_dataset(data_x, label, text_field, label_field, data,test=False):
             examples.append(data.Example.fromlist([None, data_x[i], label[i][0], label[i][1]], fields))
     return examples, fields
 
-def training(model, iterator, optimizer, criterion, label_name = 'agency'):
-  
-  epoch_loss = 0
-  epoch_acc = 0
-  total_len = 0
 
-  model.train() 
-  for batch in iterator:
+def training(model, iterator, optimizer, criterion, label_name='agency'):
+    epoch_loss = 0
+    epoch_acc = 0
+    total_len = 0
 
-    optimizer.zero_grad()
-    lab= batch.agency if label_name == 'agency' else batch.social
-    
-    predictions = model(batch.text).squeeze(1)
-    
-    loss = criterion(predictions, lab)
-    acc = binary_accuracy(predictions, lab)
-    
-    loss.backward()  
-    optimizer.step() 
+    model.train()
+    for batch in iterator:
+        optimizer.zero_grad()
+        lab = batch.agency if label_name == 'agency' else batch.social
 
-    epoch_loss += loss.item() * len(lab)
-    
-    epoch_acc += acc.item() * len(lab)
-    total_len += len(lab)
-  return epoch_loss / total_len, epoch_acc / total_len
+        predictions = model(batch.text).squeeze(1)
+
+        loss = criterion(predictions, lab)
+        acc = binary_accuracy(predictions, lab)
+
+        loss.backward()
+        optimizer.step()
+
+        epoch_loss += loss.item() * len(lab)
+
+        epoch_acc += acc.item() * len(lab)
+        total_len += len(lab)
+    return epoch_loss / total_len, epoch_acc / total_len
+
 
 # def training(model, iterator, optimizer, criterion, label_name= 'agency'):
 #     epoch_loss = 0.
@@ -73,7 +74,6 @@ def training(model, iterator, optimizer, criterion, label_name = 'agency'):
 #         loss.backward()
 #         optimizer.step()
 
-        
 
 #         if label_name == 'agency':
 #           acc= binary_accuracy(predictions, batch.agency).item()
@@ -85,30 +85,36 @@ def training(model, iterator, optimizer, criterion, label_name = 'agency'):
 #     return epoch_loss/total_len, epoch_acc/total_len
 
 
-def evaluate(model, iterator, criterion, label_name = 'agency'):
-  
-  epoch_loss = 0
-  epoch_acc = 0
-  total_len = 0
-  
+def evaluate(model, iterator, criterion, label_name='agency'):
+    epoch_loss = 0
+    epoch_acc = 0
+    epoch_prec = 0
+    epoch_recall = 0
+    epoch_f1 = 0
+    total_len = 0
 
-  model.eval() 
-  
-  with torch.no_grad():
+    model.eval()
 
-    for batch in iterator:
-      predictions = model(batch.text).squeeze(1)
-      lab= batch.agency if label_name == 'agency' else batch.social
+    with torch.no_grad():
+        for batch in iterator:
+            predictions = model(batch.text).squeeze(1)
+            lab = batch.agency if label_name == 'agency' else batch.social
 
-      loss = criterion(predictions, lab)
-      acc = binary_accuracy(predictions, lab)
+            loss = criterion(predictions, lab)
+            acc = binary_accuracy(predictions, lab)
+            prec = precision_score(lab.cpu(), torch.round(predictions).cpu())
+            recall = recall_score(lab.cpu(), torch.round(predictions).cpu())
+            f1 = f1_score(lab.cpu(), torch.round(predictions).cpu())
 
-      epoch_loss += loss.item() * len(lab)
-      epoch_acc += acc.item() * len(lab)
-      total_len += len(lab)
-  model.train()
-  
-  return epoch_loss / total_len, epoch_acc / total_len
+            epoch_f1 += f1 * len(lab)
+            epoch_prec += prec * len(lab)
+            epoch_recall += recall * len(lab)
+            epoch_loss += loss.item() * len(lab)
+            epoch_acc += acc.item() * len(lab)
+            total_len += len(lab)
+    model.train()
+
+    return epoch_loss / total_len, epoch_acc / total_len, epoch_prec / total_len, epoch_recall / total_len, epoch_f1 / total_len
 
 
 # def evaluate(model_a ,model_s, iterator, criterion):
@@ -165,15 +171,14 @@ def epoch_time(start_time, end_time):
     elapsed_secs = int(elapsed_time - (elapsed_mins * 60))
     return elapsed_mins, elapsed_secs
 
-def binary_accuracy(preds, y):
 
+def binary_accuracy(preds, y):
     rounded_preds = torch.round(torch.sigmoid(preds))
 
     correct = (rounded_preds == y).float()
     acc = correct.sum() / len(correct)
 
     return acc
-
 
 # def binary_accuracy(preds, y):
 

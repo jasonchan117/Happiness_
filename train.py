@@ -1,11 +1,15 @@
+
+
 from utils import *
 import torch
 from torchtext import data
 import torch.nn as nn
 import time
+import datetime
 import torch.optim as optim
 import argparse
 import random
+import os
 from model import *
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -38,8 +42,10 @@ parser.add_argument('--layer',default=2,
                     help='The number of RNN layers.')
 parser.add_argument('--bid',action='store_true',
                     help='RNN is bidirectional or not.')
+parser.add_argument('--output',default='../output')
 args = parser.parse_args()
-
+os.makedirs(args.output, exist_ok=True)
+time_str = datetime.datetime.now().isoformat()
 raw_x, raw_y = get_raw_data(args.traindata)
 test_x, test_y = get_raw_data(args.testdata)
 
@@ -103,10 +109,10 @@ best_valid_loss = float('inf')
 for epoch in range(args.epochs):
     start_time = time.time()
     train_loss, train_acc = training(model_s, train_iterator, optimizer_s, criterion, label_name = 'social')
-    valid_loss, valid_acc = evaluate(model_s, valid_iterator, criterion, label_name='social')
+    valid_loss, valid_acc ,valid_prec, valid_recall, valid_f1= evaluate(model_s, valid_iterator, criterion, label_name='social')
 
     train_loss_a, train_acc_a = training(model_a, train_iterator, optimizer_a, criterion)
-    valid_loss_a, valid_acc_a = evaluate(model_a, valid_iterator, criterion)
+    valid_loss_a, valid_acc_a , valid_prec_a, valid_recall_a, valid_f1_a = evaluate(model_a, valid_iterator, criterion)
 
 
     # train_loss_a, train_acc_a = training(model_a, train_iterator, optimizer_a,  criterion)
@@ -132,13 +138,13 @@ for epoch in range(args.epochs):
     print('Agency:')
 
     print(f'\tTrain Loss: {train_loss_a:.6f} | Train Acc: {train_acc_a*100:.5f}%')
-    print(f'\t Val. Loss: {valid_loss_a:.6f} |  Val. Acc: {valid_acc_a*100:.5f}%')
+    print(f'\t Val. Loss: {valid_loss_a:.6f} |  Val. Acc: {valid_acc_a*100:.5f} |  Val. Prec: {valid_prec_a*100:.5f} |  Val. Recall: {valid_recall_a*100:.5f}|  Val. F1: {valid_f1_a*100:.5f}%')
 
 
     print('Social:')
 
     print(f'\tTrain Loss: {train_loss:.6f} | Train Acc: {train_acc*100:.5f}%')
-    print(f'\t Val. Loss: {valid_loss:.6f} |  Val. Acc: {valid_acc*100:.5f}%')
+    print(f'\t Val. Loss: {valid_loss:.6f} |  Val. Acc: {valid_acc*100:.5f}|  Val. Prec: {valid_prec*100:.5f} |  Val. Recall: {valid_recall*100:.5f}|  Val. F1: {valid_f1*100:.5f}%')
 
     # print(f'Epoch: {epoch + 1:02} | Epoch Time: {epoch_mins}m {epoch_secs}s')
     # print(f'\tTrain Loss: {train_loss:.6f} | Train Acc of Agency: {train_acc_a * 100:.5f} | Train Acc of Social: {train_acc_s * 100:.5f}%')
