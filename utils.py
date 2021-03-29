@@ -104,9 +104,9 @@ def evaluate(model, iterator, criterion, label_name='agency'):
 
             loss = criterion(predictions, lab)
             acc = binary_accuracy(predictions, lab)
-            prec = precision_score(lab.cpu(), torch.round(predictions).cpu())
-            recall = recall_score(lab.cpu(), torch.round(predictions).cpu())
-            f1 = f1_score(lab.cpu(), torch.round(predictions).cpu())
+            prec = precision_score(lab.cpu(), torch.round(torch.sigmoid(predictions)).cpu())
+            recall = recall_score(lab.cpu(), torch.round(torch.sigmoid(predictions)).cpu())
+            f1 = f1_score(lab.cpu(), torch.round(torch.sigmoid(predictions)).cpu())
 
             epoch_f1 += f1 * len(lab)
             epoch_prec += prec * len(lab)

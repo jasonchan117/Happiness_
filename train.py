@@ -141,9 +141,9 @@ if args.test == True and args.pretrain == True:
 
 
   print('Agency:')
-  print(classification_report(lab_a.cpu(), torch.round(predictions_a).cpu()))
+  print(classification_report(lab_a.cpu(), torch.round(torch.sigmoid(predictions_a)).cpu()))
   print('Social:')
-  print(classification_report(lab_s.cpu(), torch.round(predictions_s).cpu()))
+  print(classification_report(lab_s.cpu(), torch.round(torch.sigmoid(predictions_s)).cpu()))
 
   sys.exit()
 
