@@ -34,6 +34,7 @@ def get_dataset(data_x, label, text_field, label_field, data, test=False):
 
 
 def training(model, iterator, optimizer, criterion, label_name='agency'):
+    print('Training')
     epoch_loss = 0
     epoch_acc = 0
     total_len = 0
@@ -86,6 +87,7 @@ def training(model, iterator, optimizer, criterion, label_name='agency'):
 
 
 def evaluate(model, iterator, criterion, label_name='agency'):
+    print('Validation')
     epoch_loss = 0
     epoch_acc = 0
     epoch_prec = 0

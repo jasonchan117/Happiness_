@@ -1,5 +1,4 @@
-
-
+from sklearn.metrics import classification_report
 from utils import *
 import torch
 from torchtext import data
@@ -40,10 +39,15 @@ parser.add_argument('--hidden_dim', default=256,
                     help='The dimension of hidden layer.')
 parser.add_argument('--layer',default=2,
                     help='The number of RNN layers.')
-parser.add_argument('--bid',action='store_true',
-                    help='RNN is bidirectional or not.')
+parser.add_argument('--pretrain',action='store_true',
+                    help='Use pretrain models or not.')
+
+parser.add_argument('--test',action='store_true',
+                    help='Test or not.')
 parser.add_argument('--output',default='../output')
 args = parser.parse_args()
+
+
 os.makedirs(args.output, exist_ok=True)
 time_str = datetime.datetime.now().isoformat()
 raw_x, raw_y = get_raw_data(args.traindata)
@@ -71,7 +75,7 @@ if args.cuda == True:
 TEXT.build_vocab(train, max_size=25000, vectors="glove.6B.100d", unk_init=torch.Tensor.normal_)
 LABEL.build_vocab(train)
 
-train_iterator,valid_iterator, test_iterator = data.BucketIterator.splits(
+train_iterator, valid_iterator, test_iterator = data.BucketIterator.splits(
     (train, valid, test),
     batch_size = args.batch,
     sort_key= lambda x : len(x.text),
@@ -105,7 +109,45 @@ model_a = model_a.to(device)
 model_s = model_s.to(device)
 criterion = nn.BCEWithLogitsLoss()
 criterion = criterion.to(device)
-best_valid_loss = float('inf')
+best_valid_loss_a = float('inf')
+best_valid_loss_s = float('inf')
+
+if args.pretrain == True:
+  print('Loading models')
+  state_dict_a = torch.load('./RNN_model_a.pt')
+  state_dict_s = torch.load('./RNN_model_s.pt')
+  
+  model_a.load_state_dict(state_dict_a)
+  model_s.load_state_dict(state_dict_s)
+
+if args.test == True and args.pretrain == True:
+  print('Testing')
+  flag = 1
+  for batch in test_iterator:
+      if flag == 1:
+        lab_s = batch.agency 
+        lab_a = batch.social
+        # Social
+        predictions_s = model_s(batch.text).squeeze(1)
+        # Agency
+        predictions_a = model_a(batch.text).squeeze(1)
+        flag = 0
+      else:
+        predictions_s = torch.cat([predictions_s, model_s(batch.text).squeeze(1)], 0)
+        predictions_a = torch.cat([predictions_a, model_a(batch.text).squeeze(1)], 0)
+        lab_a = torch.cat([lab_a, batch.agency], 0)
+        lab_s = torch.cat([lab_s, batch.social], 0)
+
+
+  print('Agency:')
+  print(classification_report(lab_a.cpu(), torch.round(predictions_a).cpu()))
+  print('Social:')
+  print(classification_report(lab_s.cpu(), torch.round(predictions_s).cpu()))
+
+  sys.exit()
+
+
+# Start training
 for epoch in range(args.epochs):
     start_time = time.time()
     train_loss, train_acc = training(model_s, train_iterator, optimizer_s, criterion, label_name = 'social')
@@ -114,40 +156,30 @@ for epoch in range(args.epochs):
     train_loss_a, train_acc_a = training(model_a, train_iterator, optimizer_a, criterion)
     valid_loss_a, valid_acc_a , valid_prec_a, valid_recall_a, valid_f1_a = evaluate(model_a, valid_iterator, criterion)
 
-
-    # train_loss_a, train_acc_a = training(model_a, train_iterator, optimizer_a,  criterion)
-    # train_loss_s, train_acc_s = training(model_s, train_iterator, optimizer_s,  criterion, label_name= 'social')
-
-    # train_loss = train_loss_a + train_loss_s
-
-    # Derives the metric values including accuracy, precision, recall and f1.
-    # valid_loss, valid_acc_a, valid_prec_a, valid_recall_a, valid_f1_a, valid_acc_s, valid_prec_s, valid_recall_s, valid_f1_s = evaluate(model_a, model_s, valid_iterator, criterion)
     end_time = time.time()
     epoch_mins, epoch_secs = epoch_time(start_time, end_time)
 
 
 
     print(f'Epoch: {epoch+1:02} | Epoch Time: {epoch_mins}m {epoch_secs}s')
-    # Save the model.
-    # if valid_loss < best_valid_loss:
-    #     best_valid_loss = valid_loss
-    #     torch.save(model.state_dict(), 'wordavg-model.pt')
+    #Save the model.
+    if valid_loss < best_valid_loss_s:
+        best_valid_loss_s = valid_loss
+        torch.save(model_s.state_dict(), 'RNN_model_s.pt')
+    
+    if valid_loss_a < best_valid_loss_a:
+        best_valid_loss_a = valid_loss_a
+        torch.save(model_a.state_dict(), 'RNN_model_a.pt')
 
-    ###Printing results
+
 
     print('Agency:')
-
     print(f'\tTrain Loss: {train_loss_a:.6f} | Train Acc: {train_acc_a*100:.5f}%')
     print(f'\t Val. Loss: {valid_loss_a:.6f} |  Val. Acc: {valid_acc_a*100:.5f} |  Val. Prec: {valid_prec_a*100:.5f} |  Val. Recall: {valid_recall_a*100:.5f}|  Val. F1: {valid_f1_a*100:.5f}%')
 
-
     print('Social:')
-
     print(f'\tTrain Loss: {train_loss:.6f} | Train Acc: {train_acc*100:.5f}%')
     print(f'\t Val. Loss: {valid_loss:.6f} |  Val. Acc: {valid_acc*100:.5f}|  Val. Prec: {valid_prec*100:.5f} |  Val. Recall: {valid_recall*100:.5f}|  Val. F1: {valid_f1*100:.5f}%')
+# Testing
 
-    # print(f'Epoch: {epoch + 1:02} | Epoch Time: {epoch_mins}m {epoch_secs}s')
-    # print(f'\tTrain Loss: {train_loss:.6f} | Train Acc of Agency: {train_acc_a * 100:.5f} | Train Acc of Social: {train_acc_s * 100:.5f}%')
-    # print(f'\t Val. Loss: {valid_loss:.6f} | Val. Acc of Agency: {valid_acc_a * 100:.5f}% | Val. Acc of Social: {valid_acc_s * 100:.5f}%')
-    # #print(f'\t Val. Loss: {valid_loss:.3f} | Val. Acc of Agency: {valid_acc_a * 100:.2f}% | Val. Prec of Agency: {valid_prec_a * 100:.2f}% | Val. Recall of Agency: {valid_recall_a * 100:.2f}% | Val. F1 of Agency: {valid_f1_a * 100:.2f} | Val. Acc of Social: {valid_acc_s * 100:.2f}% | Val. Prec of Social: {valid_prec_s * 100:.2f}% | Val. Recall of Social: {valid_recall_s * 100:.2f}% | Val. F1 of Social: {valid_f1_s * 100:.2f}%')
 
