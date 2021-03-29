@@ -41,7 +41,8 @@ parser.add_argument('--layer',default=2,
                     help='The number of RNN layers.')
 parser.add_argument('--pretrain',action='store_true',
                     help='Use pretrain models or not.')
-
+parser.add_argument('--bid',action='store_true',
+                    help='RNN is bidirectional or not.')
 parser.add_argument('--test',action='store_true',
                     help='Test or not.')
 parser.add_argument('--output',default='../output')
