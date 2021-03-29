@@ -59,7 +59,7 @@ TEXT = data.Field(sequential=True, tokenize=tokenize, lower=True, fix_length=200
 LABEL = data.Field(sequential=False, use_vocab=False,dtype=torch.float)
 
 train_examples, train_fields = get_dataset(raw_x,raw_y, TEXT, LABEL, data=data)
-test_examples, test_fields = get_dataset(test_x,test_y, TEXT, LABEL, data=data, test=True)
+test_examples, test_fields = get_dataset(test_x,test_y, TEXT, LABEL, data=data)
 
 # Build training and validation datasets
 train = data.Dataset(train_examples, train_fields)
@@ -124,26 +124,27 @@ if args.pretrain == True:
 if args.test == True and args.pretrain == True:
   print('Testing')
   flag = 1
-  for batch in test_iterator:
-      if flag == 1:
-        lab_s = batch.agency 
-        lab_a = batch.social
-        # Social
-        predictions_s = model_s(batch.text).squeeze(1)
-        # Agency
-        predictions_a = model_a(batch.text).squeeze(1)
-        flag = 0
-      else:
-        predictions_s = torch.cat([predictions_s, model_s(batch.text).squeeze(1)], 0)
-        predictions_a = torch.cat([predictions_a, model_a(batch.text).squeeze(1)], 0)
-        lab_a = torch.cat([lab_a, batch.agency], 0)
-        lab_s = torch.cat([lab_s, batch.social], 0)
+  with torch.no_grad():
+    for batch in test_iterator:
+        if flag == 1:
+          lab_s = batch.agency 
+          lab_a = batch.social
+          # Social
+          predictions_s = model_s(batch.text).squeeze(1)
+          # Agency
+          predictions_a = model_a(batch.text).squeeze(1)
+          flag = 0
+        else:
+          predictions_s = torch.cat([predictions_s, model_s(batch.text).squeeze(1)], 0)
+          predictions_a = torch.cat([predictions_a, model_a(batch.text).squeeze(1)], 0)
+          lab_a = torch.cat([lab_a, batch.agency], 0)
+          lab_s = torch.cat([lab_s, batch.social], 0)
 
 
-  print('Agency:')
-  print(classification_report(lab_a.cpu(), torch.round(torch.sigmoid(predictions_a)).cpu()))
-  print('Social:')
-  print(classification_report(lab_s.cpu(), torch.round(torch.sigmoid(predictions_s)).cpu()))
+    print('Agency:')
+    print(classification_report(lab_a.cpu(), torch.round(torch.sigmoid(predictions_a)).cpu()))
+    print('Social:')
+    print(classification_report(lab_s.cpu(), torch.round(torch.sigmoid(predictions_s)).cpu()))
 
   sys.exit()
 

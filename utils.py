@@ -27,7 +27,6 @@ def get_dataset(data_x, label, text_field, label_field, data, test=False):
         for text in tqdm(data_x):
             examples.append(data.Example.fromlist([None, text, None, None], fields))
     else:
-        print(label[0])
         for i in range(len(data_x)):
             examples.append(data.Example.fromlist([None, data_x[i], label[i][0], label[i][1]], fields))
     return examples, fields
