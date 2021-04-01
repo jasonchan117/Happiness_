@@ -16,7 +16,7 @@ INGREDIENTS FOR HAPPINESS](https://www.site.uottawa.ca/~diana/csi5386/A2_2021/A2
     - `--lr` Learning rate.
     - `--weight_decay` Factor for L2 regularization.
     - `--seed` Manual seed.
-    - `--cuda` Manual seed.
+    - `--cuda` Use cuda or not.
     - `--embed_dim` The dimension of embedding.
     - `--hidden_dim` The dimension of hidden layer.
     - `--pretrain` Use pretrain models or not.
