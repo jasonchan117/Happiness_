@@ -7,7 +7,7 @@ INGREDIENTS FOR HAPPINESS](https://www.site.uottawa.ca/~diana/csi5386/A2_2021/A2
 ### 1. Step1: Baseline
 - **Execution**: Get the same results by below command.
     ```bash
-    !python train.py --cuda --bid --epochs 50
+    python train.py --cuda --bid --epochs 50
     ```
     - `--traindata` The path to the training data.
     - `--testdata` The path to test data.
