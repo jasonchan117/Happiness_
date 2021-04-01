@@ -24,7 +24,7 @@ INGREDIENTS FOR HAPPINESS](https://www.site.uottawa.ca/~diana/csi5386/A2_2021/A2
     - `--bid` RNN is bidirectional or not.
     - `--test` Test or not.
  ### 2. Step2: Fine-tuning BERT
- - **Execution**: open ipynb file in google colab and run each code cell.
+ - **Execution**: open ipynb file in google colab and run each code cell in order.
  - As the model trained is random, running the code may not get exactly the same result, the score of precision, recall and F1 may vary but the accuracy will be the same.
  - Agency label parameter: 
    - sequence length -- 40, 
