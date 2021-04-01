@@ -27,10 +27,10 @@ INGREDIENTS FOR HAPPINESS](https://www.site.uottawa.ca/~diana/csi5386/A2_2021/A2
  - **Execution**: open ipynb file in google colab and run each code cell.
  - As the model trained is random, running the code may not get exactly the same result, the score of precision, recall and F1 may vary but the accuracy will be the same.
  - Agency label parameter: 
- - sequence length -- 40, 
- - batch size -- 32, 
- - epoch -- 50
+   - sequence length -- 40, 
+   - batch size -- 32, 
+   - epoch -- 50
  - Social label parameter:
- - sequence length -- 40, 
- - batch size -- 32, 
- - epoch -- 100
+   - sequence length -- 40, 
+   - batch size -- 32, 
+   - epoch -- 100
