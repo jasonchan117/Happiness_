@@ -34,3 +34,17 @@ INGREDIENTS FOR HAPPINESS](https://www.site.uottawa.ca/~diana/csi5386/A2_2021/A2
    - sequence length -- 40, 
    - batch size -- 32, 
    - epoch -- 100
+ ### 3. Step2: Fine-tuning BERT with Bootstrapping
+ - **Execution**: open ipynb file in local enviroment or Google colab and run each code cell in order.
+ - Agency label parameter: 
+   - sequence length -- 40, 
+   - batch size -- 32, 
+   - epoch -- 16
+   - train iteration --3
+   - threshold --0.98
+ - Social label parameter:
+   - sequence length -- 40, 
+   - batch size -- 32, 
+   - epoch -- 100 
+   - train iteration --3
+   - threshold --0.95
