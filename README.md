@@ -5,7 +5,7 @@ INGREDIENTS FOR HAPPINESS](https://www.site.uottawa.ca/~diana/csi5386/A2_2021/A2
 
 
 ### 1. Step1: Baseline
-- **Execution**: Get the same results by below command.
+- **Execution**: Get the same results by below command(Please put the data under the dir ./data).
     ```bash
     python train.py --cuda --bid --epochs 50
     ```
